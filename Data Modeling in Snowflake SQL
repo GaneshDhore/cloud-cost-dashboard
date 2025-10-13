@@ -1,0 +1,21 @@
+-- Create staging table
+CREATE OR REPLACE TABLE staging_aws_costs (
+    invoice_id STRING,
+    linked_account_id STRING,
+    product_name STRING,
+    usage_type STRING,
+    usage_amount FLOAT,
+    unblended_cost FLOAT,
+    usage_start_date DATE
+);
+
+-- Transform and summarize data
+CREATE OR REPLACE TABLE monthly_cost_summary AS
+SELECT 
+    DATE_TRUNC('month', usage_start_date) AS month,
+    product_name,
+    SUM(unblended_cost) AS total_cost,
+    SUM(usage_amount) AS total_usage
+FROM staging_aws_costs
+GROUP BY 1, 2
+ORDER BY month;
